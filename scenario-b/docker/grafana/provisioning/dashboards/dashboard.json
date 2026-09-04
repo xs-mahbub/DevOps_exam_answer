@@ -1,0 +1,142 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Panel A — Top 5 Slowest Endpoints (p95 Latency)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "topk(5, histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[2m])) by (le, route)))",
+          "legendFormat": "{{route}}"
+        }
+      ]
+    },
+    {
+      "title": "Panel B — Endpoint Consuming Most TOTAL Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "topk(5, sum(rate(http_request_duration_seconds_sum[2m])) by (route))",
+          "legendFormat": "{{route}}"
+        }
+      ]
+    },
+    {
+      "title": "Panel C — DB Query Duration: Avg vs p99",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(db_query_duration_seconds_sum[2m])) by (query_name) / sum(rate(db_query_duration_seconds_count[2m])) by (query_name)",
+          "legendFormat": "avg - {{query_name}}"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(db_query_duration_seconds_bucket[2m])) by (le, query_name))",
+          "legendFormat": "p99 - {{query_name}}"
+        }
+      ]
+    },
+    {
+      "title": "Panel D — Slowest Query vs Execution Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(db_query_duration_seconds_bucket[2m])) by (le, query_name))",
+          "legendFormat": "p99 - {{query_name}}"
+        },
+        {
+          "expr": "sum(rate(db_query_duration_seconds_count[2m])) by (query_name)",
+          "legendFormat": "rate - {{query_name}}"
+        }
+      ]
+    },
+    {
+      "title": "Panel E — The N+1 Detector (DB Queries Per Request)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(db_queries_per_request_bucket[2m])) by (le, route))",
+          "legendFormat": "{{route}}"
+        }
+      ]
+    },
+    {
+      "title": "Panel F — Harmful Queries Over Time (>50ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(rate(db_query_duration_seconds_count[2m])) by (query_name) - sum(rate(db_query_duration_seconds_bucket{le=\"0.05\"}[2m])) by (query_name)",
+          "legendFormat": ">50ms - {{query_name}}"
+        }
+      ]
+    },
+    {
+      "title": "Panel G — Rows Returned Distribution",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(db_rows_returned_bucket[2m])) by (le, query_name))",
+          "legendFormat": "{{query_name}}"
+        }
+      ]
+    },
+    {
+      "title": "Panel H — Error Rate & p95 Latency by Tenant",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[2m])) by (le, tenant))",
+          "legendFormat": "p95 - {{tenant}}"
+        },
+        {
+          "expr": "sum(rate(http_requests_total{status=~\"5..\"}[2m])) by (tenant)",
+          "legendFormat": "errors - {{tenant}}"
+        }
+      ]
+    },
+    {
+      "title": "Panel I — Saturation: In-Flight vs Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
+      "targets": [
+        {
+          "expr": "http_requests_in_flight",
+          "legendFormat": "in-flight requests"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[2m])) by (le))",
+          "legendFormat": "overall p95 latency"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["exam", "b3"],
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "",
+  "title": "exam-root-vmi3536696-1788282556-1536d427"
+}

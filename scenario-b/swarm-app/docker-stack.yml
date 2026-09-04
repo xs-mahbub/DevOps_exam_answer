@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    image: faheem/notes-api:v1
+    ports:
+      - "3120:3000"
+    environment:
+      - APP_VERSION=v1
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        parallelism: 1
+        delay: 2s
+        failure_action: rollback
+        monitor: 5s
+      rollback_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure

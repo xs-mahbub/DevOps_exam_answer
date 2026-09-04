@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: notes-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: notes_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notes_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - notes-net
+
+  app:
+    build:
+      context: ../..
+      dockerfile: scenario-b/docker/Dockerfile
+    container_name: notes-app
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:password123@postgres:5432/notes_db
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - notes-net
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: notes-prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - notes-net
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: notes-grafana
+    ports:
+      - "3005:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - notes-net
+
+volumes:
+  pgdata:
+
+networks:
+  notes-net:
+    driver: bridge

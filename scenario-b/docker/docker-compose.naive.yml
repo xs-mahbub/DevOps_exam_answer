@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: notes_db
+    volumes:
+      - pgdata_naive:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ../..
+      dockerfile: scenario-b/docker/Dockerfile
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:password123@postgres:5432/notes_db
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata_naive:

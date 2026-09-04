@@ -1,0 +1,33 @@
+# EXAM_TOKEN: root-vmi3536696-1788282556-1536d427
+name: Pull Request Verification
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Run unit tests (3 real tests)
+        run: npm test
+
+      - name: Build Docker image
+        run: docker build -t faheem-notes-test:${{ github.sha }} -f swarm-app/Dockerfile swarm-app/
+
+      - name: Run container and test /healthz
+        run: |
+          docker run -d --name test-app -p 3000:3000 faheem-notes-test:${{ github.sha }}
+          sleep 3
+          curl --fail --retry 3 --retry-delay 2 http://localhost:3000/healthz || exit 1
+          docker stop test-app

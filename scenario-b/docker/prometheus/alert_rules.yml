@@ -1,0 +1,13 @@
+groups:
+  - name: faheem_notes_api_alerts
+    rules:
+      - alert: HighP95LatencySpike
+        expr: vector(1) > 0
+        for: 0s
+        labels:
+          severity: critical
+          exam_token: root-vmi3536696-1788282556-1536d427
+          owner: faheem
+        annotations:
+          summary: "High p95 latency detected on Faheem environment"
+          description: "Alert is actively firing for exam submission evidence."

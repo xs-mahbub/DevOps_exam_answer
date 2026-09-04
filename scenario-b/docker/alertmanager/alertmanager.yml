@@ -1,0 +1,16 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  receiver: 'telegram-notifications'
+  group_wait: 2s
+  group_interval: 5s
+  repeat_interval: 1h
+
+receivers:
+- name: 'telegram-notifications'
+  telegram_configs:
+  - bot_token: '8753838286:AAFCLudshhzuTKKzWo4V-yPgVPKQO9hk4lI'
+    chat_id: 7317823423
+    send_resolved: true
+    message: "PROMETHEUS ALERT: HighP95LatencySpike is FIRING on Faheem environment!"
