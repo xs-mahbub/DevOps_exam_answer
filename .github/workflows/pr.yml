@@ -17,17 +17,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
 
       - name: Run unit tests (3 real tests)
-        run: npm test
+        run: |
+          node scenario-b/test/app.test.js
 
       - name: Build Docker image
-        run: docker build -t faheem-notes-test:${{ github.sha }} -f swarm-app/Dockerfile swarm-app/
+        run: |
+          docker build -t faheem-notes-test:${{ github.sha }} scenario-b/swarm-app/
 
       - name: Run container and test /healthz
         run: |
           docker run -d --name test-app -p 3000:3000 faheem-notes-test:${{ github.sha }}
-          sleep 3
+          sleep 4
           curl --fail --retry 3 --retry-delay 2 http://localhost:3000/healthz || exit 1
           docker stop test-app
