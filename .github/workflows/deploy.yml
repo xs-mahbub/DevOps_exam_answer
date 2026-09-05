@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-push:
+  test-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -21,42 +21,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
+      - name: Run unit tests
+        run: node scenario-b/test/app.test.js
+
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels)
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}/faheem-notes-api
-          tags: |
-            type=sha,prefix=sha-,format=short
-            type=raw,value=v1.0.3
-            type=raw,value=latest
-
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: ./scenario-b/swarm-app
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    environment: production
-
-    steps:
-      - name: Deploy to Production Swarm Cluster
-        run: |
-          echo "=== TRIGGERING ROLLING DEPLOYMENT ==="
-          echo "Target Image: ghcr.io/${{ github.repository }}/faheem-notes-api:v1.0.3"
-          echo "Swarm Manager Host: 169.58.246.108"
-          echo "Service: faheem_notes_app"
-          echo "Deployment verified and synchronized with Swarm cluster state."
+          push: false
