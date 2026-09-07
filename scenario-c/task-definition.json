@@ -6,11 +6,11 @@
   ],
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::<AWS_ACCOUNT_ID>:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "fc-notes-app",
-      "image": "<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/fc-exam-repo:v1.0.0",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/fc-exam-repo:v1.0.0",
       "essential": true,
       "portMappings": [
         {
@@ -21,13 +21,14 @@
       ],
       "environment": [
         { "name": "PORT", "value": "3000" },
-        { "name": "DB_HOST", "value": "localhost" },
-        { "name": "DB_NAME", "value": "notes_db" }
+        { "name": "DB_HOST", "value": "postgres.internal" },
+        { "name": "DB_NAME", "value": "notes_db" },
+        { "name": "DB_USER", "value": "notes_user" }
       ],
       "healthCheck": {
         "command": [
           "CMD-SHELL",
-          "node -e \"require('http').get('http://localhost:3000/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1))\""
+          "node -e \"require('http').get('http://localhost:3000/healthz', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})\""
         ],
         "interval": 30,
         "timeout": 5,
