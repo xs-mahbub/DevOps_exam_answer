@@ -34,7 +34,6 @@ jobs:
           ECR_REPOSITORY: fc-exam-repo
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # যদি Dockerfile scenario-c ডিরেক্টরিতে থাকে
           if [ -f scenario-c/Dockerfile ]; then
             cd scenario-c
           fi
