@@ -16,11 +16,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials (OIDC / IAM)
+      - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::750069566598:role/fc-github-actions-role
+          role-session-name: GitHubActionsECSDeploy
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
@@ -34,6 +34,10 @@ jobs:
           ECR_REPOSITORY: fc-exam-repo
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          # যদি Dockerfile scenario-c ডিরেক্টরিতে থাকে
+          if [ -f scenario-c/Dockerfile ]; then
+            cd scenario-c
+          fi
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
